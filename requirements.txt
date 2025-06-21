@@ -1,2 +1,2 @@
-pip install Django
-pip install pillow
+Django == 5.2.3
+pillow == 11.2.1
