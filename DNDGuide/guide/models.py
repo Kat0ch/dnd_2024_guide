@@ -133,15 +133,89 @@ class Skills(models.Model):
         return self.name
 
 
-class WeaponsTypes(models.Model):
-    name = models.CharField(verbose_name='Типы оружия')
+class WeaponsCategories(models.Model):
+    name = models.CharField(verbose_name='Название')
+    description = models.TextField(verbose_name='Описание', blank=True)
 
     class Meta:
-        verbose_name = 'Тип оружия'
-        verbose_name_plural = 'Типы оружия'
+        verbose_name = 'Категория оружия'
+        verbose_name_plural = 'Категории оружия'
 
     def __str__(self):
         return self.name
+
+
+class WeaponsClasses(models.Model):
+    name = models.CharField(verbose_name='Название')
+    description = models.TextField(verbose_name='Описание', blank=True)
+
+    class Meta:
+        verbose_name = 'Класс оружия'
+        verbose_name_plural = 'Классы оружия'
+
+    def __str__(self):
+        return self.name
+
+
+class WeaponsFeatures(models.Model):
+    name = models.CharField(verbose_name='Название')
+    description = models.TextField(verbose_name='Описание', )
+
+    class Meta:
+        verbose_name = 'Свойство оружия'
+        verbose_name_plural = 'Свойства оружия'
+
+    def __str__(self):
+        return self.name
+
+
+class WeaponsTechniques(models.Model):
+    name = models.CharField(verbose_name='Название')
+    description = models.TextField(verbose_name='Описание')
+
+    class Meta:
+        verbose_name = 'Оружейные прием'
+        verbose_name_plural = 'Оружейные приемы'
+
+    def __str__(self):
+        return self.name
+
+
+class ArmorCategory(models.Model):
+    name = models.CharField(verbose_name='Название')
+    description = models.TextField(verbose_name='Описание', blank=True)
+
+    class Meta:
+        verbose_name = 'Категория доспеха'
+        verbose_name_plural = 'Категории доспехов'
+
+    def __str__(self):
+        return self.name
+
+
+class Armors(Items):
+    category = models.ForeignKey(ArmorCategory, models.CASCADE, 'armor_category', verbose_name='Категория доспеха')
+    ac = models.IntegerField(verbose_name='Класс защиты', validators=[MinValueValidator(10)])
+    ac_dex = models.IntegerField(verbose_name='Бонус ловкости', default=0)
+    min_power = models.IntegerField(verbose_name='Минимум силы', blank=True)
+    hide = models.BooleanField(verbose_name='Помеха скрытности', )
+
+    class Meta:
+        verbose_name = 'Доспех'
+        verbose_name_plural = 'Доспехи'
+
+
+class Weapons(Items):
+    damage = models.ForeignKey(Damages, models.CASCADE, 'weapon_damage', verbose_name='Урон')
+    category = models.ForeignKey(WeaponsCategories, models.CASCADE, 'weapon_type', verbose_name='Категория оружия')
+    clas = models.ForeignKey(WeaponsClasses, models.CASCADE, 'weapon_class', verbose_name='Класс оружия')
+    features = models.ManyToManyField(WeaponsFeatures, 'weapons_features', verbose_name='Свойства оружия')
+    techniques = models.ForeignKey(WeaponsTechniques, models.CASCADE, 'weapon_technique',
+                                   verbose_name='Оружейный прием')
+
+    class Meta:
+        verbose_name = 'Оружие'
+        verbose_name_plural = 'Оружия'
 
 
 class Tools(Items):
@@ -159,6 +233,22 @@ class Classes(models.Model):
     name = models.CharField(verbose_name='Название')
     image = models.ImageField(upload_to='images/classes/%m/%Y/%d/', blank=True)
     description = models.TextField(verbose_name='Описание класса')
+    main_chars = models.ManyToManyField(Chars, verbose_name='Основные хар-ки', related_name='class_main_chars')
+    hit_dice = models.ForeignKey(Dices, models.CASCADE, verbose_name='Кость хитов', related_name='class_hit_dice')
+    hits_on_first_level = models.IntegerField(verbose_name='Хиты на первом уровне')
+    hits_on_next_levels = models.IntegerField(verbose_name='Хиты на следующих уровнях')
+    saving_throws = models.ManyToManyField(Dices, verbose_name='Спасброски', related_name='class_saving_throws')
+    skills_quantity = models.IntegerField(verbose_name='Количество навыков')
+    skills_list = models.ManyToManyField(Skills, verbose_name='Навыки', related_name='class_skills')
+    weapons = models.ManyToManyField(WeaponsCategories, verbose_name='Владение оружием', related_name='class_weapons')
+    weapons_text = models.CharField(verbose_name='Владение оружием(текст)')
+    tools = models.ManyToManyField(Tools, verbose_name='Владение инструментами', related_name='class_tools')
+    tools_text = models.CharField(verbose_name='Владение инструменатми(текст)')
+    armors = models.ManyToManyField(ArmorCategory, verbose_name='Владение инструментами', related_name='class_armors')
+    armors_text = models.CharField(verbose_name='Владение доспехами(текст)')
+    beginning_equipment = models.TextField(verbose_name='Старовое снаряжение')
+    spells_power = models.IntegerField(verbose_name='Сила заклинаний',
+                                       validators=[MinValueValidator(0), MaxValueValidator(3)])
 
     class Meta:
         verbose_name = 'Класс'
@@ -166,6 +256,30 @@ class Classes(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ClassesSkillsTableColumns(models.Model):
+    name = models.CharField(verbose_name='Название')
+    clas = models.ForeignKey(Classes, models.CASCADE, 'class_skill_table', verbose_name='Класс')
+
+    class Meta:
+        verbose_name = 'Столбец таблицы умений класса'
+        verbose_name_plural = 'Столбцы таблицы умений класса'
+
+    def __str__(self):
+        return self.name
+
+
+class ClassesSkillsTableValues(models.Model):
+    value = models.CharField(verbose_name='Значение')
+    column = models.ForeignKey(ClassesSkillsTableColumns, models.CASCADE, 'column_value', verbose_name='Значение')
+
+    class Meta:
+        verbose_name = 'Значение таблицы умений класса'
+        verbose_name_plural = 'Значения таблицы умений класса'
+
+    def __str__(self):
+        return self.value
 
 
 class MagicFocuses(Items):
