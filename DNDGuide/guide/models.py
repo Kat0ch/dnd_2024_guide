@@ -207,7 +207,8 @@ class Armors(Items):
 
 class Weapons(Items):
     damage = models.ForeignKey(Damages, models.CASCADE, 'weapon_damage', verbose_name='Урон')
-    category = models.ForeignKey(WeaponsCategories, models.CASCADE, 'weapon_type', verbose_name='Категория оружия')
+    category = models.ForeignKey(WeaponsCategories, models.CASCADE, 'weapon_type',
+                                 verbose_name='Категория оружия')
     clas = models.ForeignKey(WeaponsClasses, models.CASCADE, 'weapon_class', verbose_name='Класс оружия')
     features = models.ManyToManyField(WeaponsFeatures, 'weapons_features', verbose_name='Свойства оружия')
     techniques = models.ForeignKey(WeaponsTechniques, models.CASCADE, 'weapon_technique',
@@ -221,8 +222,9 @@ class Weapons(Items):
 class Tools(Items):
     char = models.ForeignKey(Chars, models.CASCADE, verbose_name='Характеристика', related_name='tool_char')
     usage = models.CharField(verbose_name='Использование')
-    creating = models.CharField(verbose_name='Создание')
-    creating_items = models.ManyToManyField(Items, verbose_name='Создвание предметов', related_name='items_tools')
+    creating = models.CharField(verbose_name='Создание', blank=True)
+    creating_items = models.ManyToManyField(Items, verbose_name='Создвание предметов', related_name='items_tools',
+                                            blank=True)
 
     class Meta:
         verbose_name = 'Инструмент'
@@ -237,16 +239,18 @@ class Classes(models.Model):
     hit_dice = models.ForeignKey(Dices, models.CASCADE, verbose_name='Кость хитов', related_name='class_hit_dice')
     hits_on_first_level = models.IntegerField(verbose_name='Хиты на первом уровне')
     hits_on_next_levels = models.IntegerField(verbose_name='Хиты на следующих уровнях')
-    saving_throws = models.ManyToManyField(Dices, verbose_name='Спасброски', related_name='class_saving_throws')
+    saving_throws = models.ManyToManyField(Chars, verbose_name='Спасброски', related_name='class_saving_throws')
     skills_quantity = models.IntegerField(verbose_name='Количество навыков')
-    skills_list = models.ManyToManyField(Skills, verbose_name='Навыки', related_name='class_skills')
-    weapons = models.ManyToManyField(WeaponsCategories, verbose_name='Владение оружием', related_name='class_weapons')
-    weapons_text = models.CharField(verbose_name='Владение оружием(текст)')
-    tools = models.ManyToManyField(Tools, verbose_name='Владение инструментами', related_name='class_tools')
-    tools_text = models.CharField(verbose_name='Владение инструменатми(текст)')
-    armors = models.ManyToManyField(ArmorCategory, verbose_name='Владение инструментами', related_name='class_armors')
-    armors_text = models.CharField(verbose_name='Владение доспехами(текст)')
-    beginning_equipment = models.TextField(verbose_name='Старовое снаряжение')
+    skills_list = models.ManyToManyField(Skills, verbose_name='Навыки', related_name='class_skills', blank=True)
+    weapons = models.ManyToManyField(WeaponsCategories, verbose_name='Владение оружием', related_name='class_weapons',
+                                     blank=True)
+    weapons_text = models.CharField(verbose_name='Владение оружием(текст)', blank=True)
+    tools = models.ManyToManyField(Tools, verbose_name='Владение инструментами', related_name='class_tools', blank=True)
+    tools_text = models.CharField(verbose_name='Владение инструменатми(текст)', blank=True)
+    armors = models.ManyToManyField(ArmorCategory, verbose_name='Владение инструментами', related_name='class_armors',
+                                    blank=True)
+    armors_text = models.CharField(verbose_name='Владение доспехами(текст)', blank=True)
+    beginning_equipment = models.TextField(verbose_name='Старовое снаряжение', blank=True)
     spells_power = models.IntegerField(verbose_name='Сила заклинаний',
                                        validators=[MinValueValidator(0), MaxValueValidator(3)])
 

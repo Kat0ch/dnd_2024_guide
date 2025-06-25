@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}
+Добавить класс: {{ block.super }}
+{% endblock %}
+{% block sidebar %}
+Новости сайта:
+{% endblock %}
+{% block content %}
+<div class="container-fluid text-left">
+    <div class="row">
+        <div class="col-8">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-dark">Добавить</button>
+            </form>
+        </div>
+        <div class="col-4">
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
